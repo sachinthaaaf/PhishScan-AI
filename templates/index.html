@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PhishScan – AI Email Threat Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --gray: #f3f4f6;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #111827;
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .blur-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      backdrop-filter: blur(2px);
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: -1;
+    }
+
+    header {
+      background: rgba(0, 0, 0, 0.65);
+      padding: 25px 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      color: #0ea5e9;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      background: rgba(10, 20, 30, 0.95);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: saturate(200%) blur(8px);
+      color: #e5e7eb;
+    }
+
+    .container:hover {
+      transform: scale(1.005);
+      transition: transform 0.2s ease;
+    }
+
+    textarea, input[type="file"], input[type="submit"] {
+      width: 100%;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    textarea {
+      padding: 15px;
+      border: 1px solid #3b82f6;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px dashed #3b82f6;
+      border-radius: 8px;
+    }
+
+    input[type="submit"] {
+      background: linear-gradient(to right, #2563eb, #1e40af);
+      color: white;
+      font-weight: 600;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+    }
+
+    input[type="submit"]:hover {
+      background: linear-gradient(to right, #3b82f6, #2563eb);
+      transform: scale(1.02);
+      box-shadow: 0 0 18px rgba(59, 130, 246, 0.6);
+    }
+
+    .result-card {
+      background-color: rgba(15, 23, 42, 0.9);
+      border-left: 5px solid #3b82f6;
+      padding: 25px;
+      margin-top: 35px;
+      border-radius: 12px;
+      animation: fadeIn 0.5s ease-in-out;
+      color: #e0f2fe;
+    }
+
+    .result-card h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .tag {
+      display: inline-block;
+      background-color: #3b82f6;
+      color: white;
+      padding: 5px 10px;
+      font-size: 13px;
+      border-radius: 20px;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    .vt-box {
+      background-color: #1e293b;
+      color: #f1f5f9;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 🎞️ Background Video -->
+  <video autoplay muted loop playsinline id="bg-video">
+    <source src="{{ url_for('static', filename='video.mp4') }}" type="video/mp4">
+  </video>
+  <div class="blur-overlay"></div>
+
+  <!-- 🧭 Header -->
+  <header>
+    <h1>PhishScan – AI Email Threat Detector</h1>
+  </header>
+
+  <!-- 📋 Form + Results -->
+  <div class="container">
+    <form method="post" enctype="multipart/form-data">
+      <label class="label">📋 Paste Email Text</label>
+      <textarea name="email_text" placeholder="e.g. Your account has been suspended. Please verify login credentials at http://phishy.site"></textarea>
+
+      <label class="label" style="margin-top: 20px;">📄 Or Upload a File (.txt or .pdf)</label>
+      <input type="file" name="file">
+
+      <input type="submit" value="🔍 Analyze Email" />
+    </form>
+
+    {% if result %}
+      <div class="result-card">
+        <h2>🧪 Scan Results</h2>
+        <p><span class="label">Prediction:</span> {{ result }}</p>
+        <p><span class="label">Confidence:</span> {{ confidence }}</p>
+        <p><span class="label">Detected Keywords:</span>
+          {% if keywords != "None" %}
+            {% for tag in keywords.split(",") %}
+              <span class="tag">{{ tag.strip() }}</span>
+            {% endfor %}
+          {% else %}
+            None
+          {% endif %}
+        </p>
+
+        <h3 style="margin-top: 20px;">🛡️ VirusTotal Link Scans</h3>
+        {% if vt_reports %}
+          {% for link, stats in vt_reports.items() %}
+            <div class="vt-box">
+              <strong>{{ link }}</strong><br>
+              {{ stats }}
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No links found or scanned.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
