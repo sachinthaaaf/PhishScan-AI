@@ -40,7 +40,7 @@ VirusTotal Link Scans
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/PhishScan.git
+git clone https://github.com/sachinthaaaf/PhishScan.git
 cd PhishScan
 ````
 
