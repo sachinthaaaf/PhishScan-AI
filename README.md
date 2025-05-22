@@ -104,7 +104,6 @@ PhishScan/
 
 ## Acknowledgements
 
-* Deakin University – SIT326 unit team
 * VirusTotal – for providing public API access
 * Kaggle and Apache – for open-source datasets
 * The maintainers of Phishing.Database for their valuable threat intelligence contribution
