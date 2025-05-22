@@ -2,7 +2,6 @@
 
 PhishScan is an AI-powered phishing email detection system that leverages machine learning, natural language processing (NLP), and real-time URL threat intelligence via the VirusTotal API. It is designed as a lightweight forensic and educational tool to classify emails as phishing or legitimate and to analyze embedded URLs for malicious content.
 
-This project was developed as part of the SIT326 – Advanced Network Analytics and Forensics (High Distinction Task).
 
 ---
 
